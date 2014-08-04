@@ -1,0 +1,4 @@
+SubKit
+======
+
+Subspace Clustering Library
