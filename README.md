@@ -7,7 +7,7 @@ Subkit currently implements the following algorithms:
 
 - [Sparse Subspace Clustering][6]
 - [Low-Rank Subspace Clustering][4]
-- Spatial Subspace Clustering [5]
+- [Spatial Subspace Clustering] [5]
 - [Ordered Subspace Clustering][3]
 
 ## Acknowledgement
