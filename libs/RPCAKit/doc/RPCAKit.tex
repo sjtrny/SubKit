@@ -1,0 +1,113 @@
+\documentclass{article}
+
+\usepackage[colorlinks=true]{hyperref}
+\usepackage[cmex10]{amsmath}
+\usepackage{bbm}
+\usepackage{graphicx}
+\usepackage{subfig}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{comment}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{multirow}
+
+\DeclareMathOperator*{\argmin}{\mathrm{argmin}}
+
+\begin{document}
+
+\title{RPCAKit: MATLAB RPCA Library}
+\author{Stephen Tierney}
+\maketitle
+
+%\tableofcontents
+
+\section{RPCA}
+
+Robust Principal Component Analysis (RPCA) \cite{candes2011robust} refers to the following problem
+\begin{align}
+\min_{\mathbf{A, N}} \|\mathbf A \| + \lambda\|\mathbf N\|_{q} \\
+\text{s.t.} \quad \mathbf{X = A + N} \nonumber
+\end{align}
+where $\mathbf X$ is observed data, $\mathbf A$ is the original low-rank data $\mathbf N$ is some noise and $q$ is a placeholder for the noise type. For example if our data is corrupted by sparse noise we set $q = 1$. In other words the goal is to recover $\mathbf A$ only knowing $\mathbf X$ and the type of noise the data has been affected by. It has been shown that the solution to this objective can exactly recover $\mathbf A$ under reasonable conditions \cite{candes2011robust}. RPCAKit provides MATLAB functions to solve this problem for Gaussian, sparse and sample specific noise.
+
+\section{Function Listing}
+
+\begin{table}[!h]
+{\small{
+\centering
+
+\begin{tabular}{c | c}
+\hline
+Objective & Function \\
+\hline
+
+$\begin{array}{c} \min_{\mathbf{A, N}} \|\mathbf A \| + \frac{\lambda}{2} \|\mathbf N\|_F^2 \\
+\text{s.t.} \quad \mathbf{X = A + N} \end{array}$
+	& rpca\_fro  \\
+\hline
+
+$\begin{array}{c} \min_{\mathbf{A, N}} \|\mathbf A \| + \lambda \|\mathbf N\|_1 \\
+\text{s.t.} \quad \mathbf{X = A + N} \end{array}$
+	& rpca\_l1  \\
+\hline
+
+$\begin{array}{c} \min_{\mathbf{A, N}} \|\mathbf A \| + \lambda \|\mathbf N\|_{1,2} \\
+\text{s.t.} \quad \mathbf{X = A + N} \end{array}$
+	& rpca\_l1l2  \\
+\hline
+
+\end{tabular}
+}}
+\end{table}
+
+\section{Implementation}
+
+We use Linearised ADMM with Adaptive Penalty \cite{lin2011linearized} to solve the RPCA problem. First form the Augmented Lagrangian
+\[
+\min_{\mathbf{A, N}} \|\mathbf A \| + \lambda\|\mathbf N\|_{q} + \langle \mathbf{Y, X - A - N} \rangle + \frac{\mu}{2} \| \mathbf{X - A - N}  \|_F^2
+\]
+
+\begin{enumerate}
+\item Fix others and solve for $\mathbf A$
+\[
+\min_{\mathbf{A}} \|\mathbf A \| + \langle \mathbf{Y, X - A - N} \rangle + \frac{\mu}{2} \| \mathbf{X - A - N}  \|_F^2
+\]
+\[
+\min_{\mathbf{A}} \|\mathbf A \| + \frac{\mu}{2} \| \mathbf{X - A - N} + \frac{1}{\mu}\mathbf Y  \|_F^2
+\]
+which has a closed form solution defined by the singular value shrinking operator \cite{lin2011linearized,candes2011robust}.
+
+\item Fix others and solve for $\mathbf N$
+\[
+\min_{\mathbf{N}} \lambda\|\mathbf N\|_{q} + \langle \mathbf{Y, X - A - N} \rangle + \frac{\mu}{2} \| \mathbf{X - A - N}  \|_F^2
+\]
+\[
+\min_{\mathbf{N}} \lambda\|\mathbf N\|_{q} + \frac{\mu}{2} \| \mathbf{X - A - N} + \frac{1}{\mu}\mathbf Y \|_F^2
+\]
+where the solutions have various closed form solutions, see \cite{candes2011robust, liu2010robust}.
+
+\item Update $\mathbf Y$
+\[
+\mathbf Y = \mathbf Y + \mu( \mathbf{X - A - N} )
+\]
+
+\item Update $\mu$
+\begin{align*}
+ \mu = \textrm{min}( \mu_{\text{max}}, \gamma \mu)
+\end{align*}
+where $\rho$ is defined as
+\[
+\gamma = 
+\begin{cases}
+\gamma_0 & \text{if} \;\; \mu_k \frac{\textrm{max} ( \| \mathbf A_{k+1} - \mathbf A_{k}  \|_F  , \|  \mathbf N_{k+1} - \mathbf N_{k})}{\| \mathbf X \|_F} < \epsilon \\
+1 & \text{otherwise,}
+\end{cases}
+\]
+$\mu_{\text{max}} >>  \mu_0$ and $\epsilon > 0$.
+\end{enumerate}
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

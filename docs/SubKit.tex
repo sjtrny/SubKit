@@ -1,0 +1,501 @@
+\documentclass{article}
+
+\usepackage[colorlinks=true]{hyperref}
+\usepackage[cmex10]{amsmath}
+\usepackage{bbm}
+\usepackage{graphicx}
+\usepackage{subfig}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{comment}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{multirow}
+
+\newcommand{\BigO}[1]{\ensuremath{\operatorname{O}\left(#1\right)}}
+\DeclareMathOperator*{\argmin}{\mathrm{argmin}}
+
+\begin{document}
+
+\title{SubKit: Subspace Clustering Library}
+\author{Stephen Tierney, Yi Guo and Junbin Gao}
+\maketitle
+
+\tableofcontents
+
+\newpage
+\section{Motivation}
+
+SubKit is a library with implementations for subspace clustering learning algorithms. This library was created during the writing of the OSC journal article to ensure fair comparison between different methods. In the original OSC CVPR paper we used implementations provided by authors of SSC and LRR. However these implementations used different noise models to what we suggested with OSC. For example the original LRR implementation expects column wise noise while we expect Gaussian noise in all columns. Therefore we required new implementations with the same noise model for fair comparison in our journal article.
+
+\section{Preliminaries}
+
+We introduce required notation. We assume the following noise model
+\begin{align}
+\mathbf{X = A + N}
+\end{align}
+where $\mathbf A$ is the noise free data (column wise data samples), $\mathbf N$ is some noise and $\mathbf X$ is the observed data. We assume that each data sample in $\mathbf A$ lies exactly on its corresponding subspace. In an ideal case subspace clustering uses the self expressive model with the noise free data i.e.\
+\begin{align}
+\mathbf{A = AZ}
+\end{align}
+where $\mathbf Z$ is the matrix of coefficients. However this is rarely the case since we do not observe noise free data therefore the self expressive model becomes 
+\begin{align}
+\mathbf{X = XZ + E}
+\end{align}
+where $\mathbf E$ is a fitting error. Once $\mathbf Z$ has been estimated one performs spectral clustering to obtain the final segmentation.
+
+\newpage
+\section{Function Listing}
+
+\begin{table}[!h]
+{\small{
+\centering
+
+\begin{tabular}{c | c | c}
+\hline
+Objective & Function & Section \\
+\hline
+
+$\begin{array}{c} \min_{\mathbf Z} \; \|\mathbf Z\|_{1} \\
+\text{s.t.} \; \mathbf{A = AZ} \end{array}$
+	& ssc\_noisefree	& 4.1  \\
+\hline
+
+\multirow{4}{*}{$\begin{array}{c} \min_{\mathbf Z} \frac12\|\mathbf X - \mathbf X\mathbf Z\|^2_F + \lambda\|\mathbf Z\|_{1} \\
+\text{s.t.} \quad \mathbf{X = XZ + E}\text{, diag}(\mathbf Z) = \mathbf 0 \end{array}$}
+		& ssc\_relaxed	& 4.2 \\
+		& ssc\_relaxed\_lin	& 4.3.1 \\
+		& ssc\_relaxed\_lin\_ext	& 4.3.2 \\
+		& ssc\_relaxed\_lin\_acc	& 4.3.3 \\		
+\hline
+
+$\begin{array}{c} \min_{\mathbf{Z, E}}  \frac12\|\mathbf E\|^2_F+  \lambda\|\mathbf Z\|_{1} \\
+\text{s.t.} \quad \mathbf{X = XZ + E}\text{, diag}(\mathbf Z) = \mathbf 0 \end{array}$
+	& ssc\_exact\_fro	& 4.4  \\
+\hline
+
+$\begin{array}{c} \min_{\mathbf{Z, E}}  \|\mathbf E\|_1+  \lambda\|\mathbf Z\|_{1} \\
+\text{s.t.} \quad \mathbf{X = XZ + E}\text{, diag}(\mathbf Z) = \mathbf 0\end{array}$
+	& ssc\_exact\_l1	& 4.4  \\
+\hline
+
+$\begin{array}{c} \min_{\mathbf{Z, E}}  \|\mathbf E\|_{1,2}+  \lambda\|\mathbf Z\|_{1} \\
+\text{s.t.} \quad \mathbf{X = XZ + E}\text{, diag}(\mathbf Z) = \mathbf 0 \end{array}$
+	& ssc\_exact\_l1l2	& 4.4  \\
+\hline
+
+$\begin{array}{c} \min_{\mathbf Z} \; \|\mathbf Z\|_{*} \\
+\text{s.t.} \; \mathbf{A = AZ} \end{array}$
+	& lrr\_noisefree	& 5.1  \\
+\hline
+
+\multirow{4}{*}{$\begin{array}{c} \min_{\mathbf Z} \frac12\|\mathbf X - \mathbf X\mathbf Z\|^2_F + \lambda\|\mathbf Z\|_{*} \end{array}$}
+		& lrr\_relaxed	& 5.2 \\
+		& lrr\_relaxed\_lin	& 5.3 \\
+		& lrr\_relaxed\_lin\_ext	& 5.3 \\
+		& lrr\_relaxed\_lin\_acc	& 5.3 \\		
+\hline
+
+$\begin{array}{c} \min_{\mathbf{Z, E}}  \frac12\|\mathbf E\|^2_F+  \lambda\|\mathbf Z\|_{*} \\
+\text{s.t.} \quad \mathbf{X = XZ + E} \end{array}$
+	& lrr\_exact\_fro	& 5.4  \\
+\hline
+
+$\begin{array}{c} \min_{\mathbf{Z, E}}  \|\mathbf E\|_1+  \lambda\|\mathbf Z\|_{*} \\
+\text{s.t.} \quad \mathbf{X = XZ + E} \end{array}$
+	& lrr\_exact\_l1	& 5.4  \\
+\hline
+
+$\begin{array}{c} \min_{\mathbf{Z, E}}  \|\mathbf E\|_{1,2}+  \lambda\|\mathbf Z\|_{*} \\
+\text{s.t.} \quad \mathbf{X = XZ + E} \end{array}$
+	& lrr\_exact\_l1l2	& 5.4  \\
+\hline
+
+\multirow{3}{*}{$\begin{array}{c} \min_{\mathbf {Z, A, N}} \; \lambda \|\mathbf{N}\|_{q} + \|\mathbf Z\|_{*} \\
+\text{s.t.} \quad \mathbf{A = AZ, X = A + N} \end{array}$}
+	& r\_lrr\_fro	& 5.5  \\
+	& r\_lrr\_l1		& 5.5  \\
+	& r\_lrr\_l2		& 5.5  \\	
+\hline
+
+$\begin{array}{c} \min_{\mathbf Z} \frac12\|\mathbf{X - X Z}|^2_F +\lambda_1\|\mathbf Z\|_{1}+\lambda_2\|\mathbf Z\mathbf R\|_{1} \\
+\text{s.t.} \; \text{diag}(\mathbf Z) = \mathbf 0 \end{array}$
+	& spatsc\_noisefree	& 6.1  \\
+\hline
+
+$\begin{array}{c} \min_{\mathbf Z} \frac12\|\mathbf{X - X Z}|^2_F +\lambda_1\|\mathbf Z\|_{1}+\lambda_2\|\mathbf Z\mathbf R\|_{1,2} \\
+\text{s.t.} \; \text{diag}(\mathbf Z) = \mathbf 0 \end{array}$
+	& osc\_noisefree	& 7.1  \\
+\hline
+
+\end{tabular}
+}}
+\end{table}
+
+\newpage
+\section{Sparse Subspace Clustering}
+
+\subsection{Noise Free}
+
+\begin{align}
+\min_{\mathbf Z} \lambda\|\mathbf Z\|_{1} \\
+\text{s.t.} \quad \mathbf{A = AZ} \nonumber
+\end{align}
+The solution to the above objective has a fast approximate solution, given by the Shape Interaction Matrix. See the low-rank clustering section for further details. Alternatively one can calculate the sample correlation matrix $\mathbf X^T \mathbf X$ and select points with the maximum correlation as neighbours on the graph.
+
+\subsection{Relaxed SSC ADMM}
+
+\begin{align}
+\min_{\mathbf Z} \frac12\|\mathbf X - \mathbf X\mathbf Z\|^2_F + \lambda\|\mathbf Z\|_{1}
+\end{align}
+To solve the relaxation via ADMM one must incorporate an auxiliary variable
+\begin{align}
+\min_{\mathbf{Z, J}} \frac12\|\mathbf X - \mathbf X\mathbf J\|^2_F + \lambda\|\mathbf Z\|_{1} \\
+\text{s.t.} \quad \mathbf{Z = J} \nonumber
+\end{align}
+\begin{align}
+\min_{\mathbf{Z, J}} \frac12\|\mathbf X - \mathbf X\mathbf J\|^2_F + \lambda\|\mathbf Z\|_{1} + \langle \mathbf{Y, Z - J} \rangle + \frac{\mu}{2} \| \mathbf{Z - J} \|_F^2
+\end{align}
+Then iterate the following
+\begin{enumerate}
+\item Fix others and solve for $\mathbf J$
+\[
+\min_{\mathbf J} \frac12\|\mathbf X - \mathbf X\mathbf J\|^2_F - \langle \mathbf{Y, J} \rangle + \frac{\mu}{2} \| \mathbf{Z - J} \|_F^2
+\]
+\[
+\min_{\mathbf J} \frac12\|\mathbf X - \mathbf X\mathbf J\|^2_F + \frac{\mu}{2} \| (\mathbf Z + \frac{1}{\mu} \mathbf Y ) - \mathbf J \|_F^2
+\]
+\[
+\mathbf X^T(\mathbf X - \mathbf X\mathbf J) + \mu ( (\mathbf Z + \frac{1}{\mu} \mathbf Y ) - \mathbf J )
+\]
+\[
+\mathbf X^T\mathbf X\mathbf J  + \mu \mathbf J = \mathbf X^T\mathbf X + \mu \mathbf Z + \mathbf Y
+\]
+\[
+(\mathbf X^T\mathbf X + \mu \mathbf I )\mathbf J = \mathbf X^T\mathbf X + \mu \mathbf Z + \mathbf Y
+\]
+\[
+\mathbf J = (\mathbf X^T\mathbf X + \mu \mathbf I )^{-1} (\mathbf X^T\mathbf X + \mu \mathbf Z + \mathbf Y)
+\]
+
+\item Fix others and solve for $\mathbf Z$
+\[
+\min_{\mathbf Z} \lambda\|\mathbf Z\|_{1} + \langle \mathbf{Y, Z} \rangle + \frac{\mu}{2} \| \mathbf{Z - J} \|_F^2
+\]
+\[
+\min_{\mathbf Z} \lambda\|\mathbf Z\|_{1} + \frac{\mu}{2} \| \mathbf Z - (\mathbf J - \frac{1}{\mu} \mathbf Y) \|_F^2
+\]
+
+\item Update $\mathbf Y$
+\[
+\mathbf Y = \mathbf Y + \mu (\mathbf{Z - J})
+\]
+
+\end{enumerate}
+
+\subsection{Relaxed SSC Linearised}
+
+Instead of using ADMM one can linearise the Frobenius norm term instead. This removes the need to do an expensive matrix inversion.
+\begin{align}
+\min_{\mathbf Z} L = \frac12\|\mathbf X - \mathbf X\mathbf Z\|^2_F + \lambda\|\mathbf Z\|_{1}
+\end{align}
+
+Let $F = \frac12\|\mathbf X - \mathbf X\mathbf Z\|^2_F$ and $\partial F = - \mathbf X^T \mathbf X + \mathbf X^T \mathbf{X Z}$.
+
+\subsubsection{Gradient Descent}
+
+This version consists on iterating the following until convergence
+
+\[
+\min_{\mathbf Z} \widetilde{L}_{\rho}(\mathbf{Z, Z_k}) =  \lambda\|\mathbf Z\|_{1} + \frac{\rho}{2} \| \mathbf Z - ( \mathbf Z_{k-1} - \frac{1}{\rho} \partial F(\mathbf Z_{k-1})) \|_F^2
+\]
+
+\subsubsection{Extended Gradient Algorithm}
+
+It has been shown that through the correct choice of step size $\rho$ the gradient method can achieve a convergence rate of $\BigO{\frac{1}{k}}$ \cite{ji2009accelerated}. More specifically we require that $\rho \geq C$ where $C$ is the Lipschitz constant. However we do not know the value of $C$ in advance. Fortunately we know that if $L(\mathbf B) \leq \widetilde{L}_{\rho}(\mathbf B, \mathbf Z_{k-1})$ where $\mathbf B = \mathcal S_{\frac{\lambda}{\rho}}(\mathbf Z_{k-1} - \frac1{\lambda}\partial L(\mathbf Z_{k-1}))$ then $\rho \geq C$. 
+
+\begin{algorithm}
+\caption{Extended Gradient Descent for Robust MC}
+\begin{algorithmic}
+
+\REQUIRE $k = 1$, $r_0 = \infty$, $\mathbf Z_0 = \mathbf 0$, $\lambda$, $\rho$, $\gamma$, $\epsilon$
+
+\WHILE{$r_k - r_{k-1} \geq \epsilon$ }
+
+	\WHILE{$L(\mathbf B) \geq \widetilde{L}_{\rho}(\mathbf B, \mathbf Z_{k-1})$}
+	
+		\STATE $\rho = \gamma \rho$	
+	
+	\ENDWHILE
+
+	\STATE $\mathbf Z_k = \mathcal S_{\frac{\lambda}{\rho}}(\mathbf Z_{k-1} - \frac1{\rho}\partial F(\mathbf Z_{k-1}))$
+	\STATE $r_k = \frac12\|\mathbf X - \mathbf X\mathbf Z_k\|^2_F + \lambda\|\mathbf Z_k\|_{1}$
+	\STATE $k = k + 1$
+	
+\ENDWHILE
+
+\end{algorithmic}
+\end{algorithm}
+
+\subsubsection{Accelerated Gradient Algorithm}
+
+We can further improve our convergence rate to $\BigO{\frac{1}{k^2}}$ by adopting Nesterov's accelerated gradient algorithm. This is similar to the algorithm described in \cite{ji2009accelerated}. Let $\mathbf B = \mathcal S_{\frac{\lambda}{\rho}}(\mathbf J_{k-1} - \frac1{\rho}\partial L(\mathbf J_{k-1}))$.
+
+\begin{algorithm}
+\caption{Accelerated Gradient Descent for Robust MC}
+\begin{algorithmic}
+
+\REQUIRE $k = 1$, $r_0 = \infty$, $\mathbf Z_0 = \mathbf 0$,  $\mathbf J_0 = \mathbf 0$, $\alpha_0 = 1$, $\lambda$, $\rho$, $\gamma$, $\epsilon$
+
+\WHILE{$r_k - r_{k-1} \geq \epsilon$ }
+
+	\WHILE{$L(\mathbf B) \geq \widetilde{L}_{\rho}(\mathbf B, \mathbf J_{k-1})$}
+	
+		\STATE $\rho = \gamma \rho$	
+	
+	\ENDWHILE
+
+	\STATE $\mathbf Z_k = \mathcal S_{\frac{\lambda}{\rho}}(\mathbf J_{k-1} - \frac1{\rho}\partial F(\mathbf J_{k-1}))$
+	\STATE $\alpha_{k} = \frac{1 + \sqrt{1 + 4 \alpha_{k-1}^2)}}{2}$
+	\STATE $\mathbf J_{k} = \mathbf Z_k + \left ( \frac{\alpha_{k-1} - 1}{\alpha_{k}} \right ) (\mathbf Z_k - \mathbf Z_{k-1})$
+	\STATE $r_k = \frac12\|\mathbf X - \mathbf X\mathbf Z_k\|^2_F + \lambda\|\mathbf Z_k\|_{1}$
+	\STATE $k = k + 1$
+	
+\ENDWHILE
+
+\end{algorithmic}
+\end{algorithm}
+
+
+\subsection{Exact SSC LADM}
+
+Using LADM and exact constraints allows us to modify the noise term from Gaussian noise only to any other norm. The objective becomes
+\begin{align}
+\min_{\mathbf{E, Z}} \frac12\|\mathbf E \|^2_q + \lambda\|\mathbf Z\|_{1} \\
+\text{s.t.} \quad \mathbf{X = XZ + E} \nonumber
+\end{align}
+where $q$ is a placeholder for norms such as $\ell_1, F, \ell_{1,2}$ etc.
+\[
+\min_{\mathbf{E, Z}} \frac12\|\mathbf E \|^2_q + \lambda\|\mathbf Z\|_{1} + \langle \mathbf{Y, XZ - X + E } \rangle + \frac{\mu}{2} \|\mathbf{XZ - X + E } \|_F^2 
+\]
+
+Iterate the following
+\begin{enumerate}
+\item Fix others  solve for $\mathbf Z$
+\[
+\min_{\mathbf{Z}} \lambda\|\mathbf Z\|_{1} + \langle \mathbf{Y, XZ} \rangle + \frac{\mu}{2} \|\mathbf{XZ - (X - E) } \|_F^2 
+\]
+\[
+\min_{\mathbf{Z}} \lambda\|\mathbf Z\|_{1} + \frac{\mu}{2} \|\mathbf{XZ - (X - E} - \frac{1}{\mu} \mathbf Y ) \|_F^2 
+\]
+Let $F = \frac{\mu}{2} \|\mathbf{XZ - (X - E} - \frac{1}{\mu} \mathbf Y ) \|_F^2$ and $\partial F =  \mu \mathbf X^T (\mathbf{XZ - (X - E} - \frac{1}{\mu} \mathbf Y ))$
+\[
+\min_{\mathbf{Z}} \lambda\|\mathbf Z\|_{1} + \frac{\rho}{2} \| \mathbf Z - (\mathbf Z_{k} - \frac{1}{\rho} \partial F(\mathbf Z_{k}) \|_F^2 
+\]
+
+
+\item Fix others and solve for $\mathbf E$
+\[
+\min_{\mathbf{E}} \frac12\|\mathbf E \|^2_q + \langle \mathbf{Y, E} \rangle + \frac{\mu}{2} \|\mathbf{XZ - X + E } \|_F^2 
+\]
+\[
+\min_{\mathbf{E}} \frac12\|\mathbf E \|^2_q + \langle \mathbf{Y, E} \rangle + \frac{\mu}{2} \|\mathbf{E - (X - XZ)} \|_F^2 
+\]
+\[
+\min_{\mathbf{E}} \frac12\|\mathbf E \|^2_q  + \frac{\mu}{2} \|\mathbf{E - (X - XZ} - \frac{1}{\mu} \mathbf Y) \|_F^2 
+\]
+
+
+\item Update $\mathbf Y$
+\begin{align*}
+\mathbf Y =& \mathbf Y + \mu (\mathbf{XZ - X + E})
+\end{align*}
+
+\item Update $\mu$
+\begin{align*}
+ \mu = \textrm{min}( \mu_{\text{max}}, \gamma \mu)
+\end{align*}
+where $\rho$ is defined as
+\[
+\gamma = 
+\begin{cases}
+\gamma_0 & \text{if} \;\; \mu_k \frac{\textrm{max} (  \sqrt{\rho} \| \mathbf Z_{k+1} - \mathbf Z_{k}  \|_F  , \|  \mathbf E_{k+1} - \mathbf E_{k})}{\| \mathbf X \|_F} < \epsilon \\
+1 & \text{otherwise,}
+\end{cases}
+\]
+and $\rho > \| \mathbf X \|_F^2$,  $\mu_{\text{max}} >>  \mu_0$ and $\epsilon > 0$.
+
+\end{enumerate}
+
+\subsection{Diagonal Constraint}
+
+In some cases it may be desirable to enforce the constraint $\textrm{diag}(\mathbf Z) = \mathbf 0$ i.e.\ we should not allow each data point to be represented by itself. To enforce such a constraint it is not necessary to significantly alter the aforementioned optimisation schemes. This constraint only affects the step involving $\mathbf Z$. Since this step is the soft shrinkage operator and is separable at the element level one can simply set the diagonal entries to $0$ afterwards.
+
+\newpage
+\section{Low-Rank Subspace Clustering}
+
+\subsection{Noise Free}
+
+\begin{align}
+\min_{\mathbf{Z}} \;  \| \mathbf{Z} \|_* \\
+\text{s.t.} \quad \mathbf{A = AZ} \nonumber
+\end{align}
+
+The solution to the above objective is given by the Shape Interaction Matrix (SIM) which is defined as $\mathbf{V  V^T}$ where $\mathbf V$ is the right singular vectors of $\mathbf A$ i.e.\
+\[
+\mathbf{A = U \Sigma V^T}, \;\; \mathbf \Sigma = \text{diag}(\{\sigma_i\}_{i=1}^r)
+\]
+
+\subsection{Relaxed LRR ADMM}
+
+\begin{align}
+\min_{\mathbf Z} \frac12\|\mathbf X - \mathbf X\mathbf Z\|^2_F + \tau \|\mathbf Z\|_{*}
+\end{align}
+This is solved similarly to Relaxed SSC ADMM. Instead of the $\ell_1$ shrinking operator in the update step for $\mathbf Z$ we must use the singular value shrinking operator which is defined as 
+\begin{align}
+\mathcal D_{\tau}(\mathbf Y) = \mathbf U S_{\tau}(\mathbf \Sigma) \mathbf V^T, \;\; S_{\tau}(\mathbf \Sigma) = \text{diag}(\{\text{max}(\sigma_i - \tau, 0)\}).
+\end{align}
+
+\subsection{Relaxed LRR Linearised}
+
+This is solved similarly to Relaxed SSC ADMM, again replacing the $\ell_1$ with the singular value shrinking operator.
+
+\subsection{Exact LRR LADM}
+
+This is solved similarly to Exact SSC LADM, again replacing the $\ell_1$ with the singular value shrinking operator.
+
+\subsection{Robust LRR}
+
+An extension of LRR called Robust-LRR (R-LRR) aims to directly deal with noisy data using the previously described data generation model
+\begin{align}
+\min_{\mathbf {Z, A, N}} \; \lambda \|\mathbf{N}\|_{q} + \|\mathbf Z\|_{*} \\
+\text{s.t.} \quad \mathbf{A = AZ, X = A + N} \nonumber
+\end{align}
+This objective can be decomposed into two steps. The first step solves a variant of RPCA [CITE] and the second uses the estimated $\mathbf A$ to compute $\mathbf Z$ using the SIM. However it is unclear as to whether such a procedure will be capable of exactly removing all noise, thus the SIM may give poor results. Fortunately further work in nuclear norm based subspace clustering by Vidal and Favaro \cite{Vidal201447} demonstrated a number of other closed form solutions for noisy data.
+
+\newpage
+\section{Spatial Subspace Clustering}
+
+In \cite{Guo.Y;Gao.J;Li.F-2013} the following spatial subspace clustering (SpatSC) objective was proposed
+\begin{align}
+\label{YiGuo1}
+\min_{\mathbf Z, \mathbf E} \frac12\|\mathbf E|^2_F +\lambda_1\|\mathbf Z\|_{1}+\lambda_2\|\mathbf Z\mathbf R\|_{1} \\
+\text{s.t.} \quad \mathbf{X = XZ + E}\text{, diag}(\mathbf Z) = \mathbf 0 \nonumber
+\end{align}
+
+\subsection{Implementation}
+
+SpatSC can be implemented similarly to OSC. However the $\ell_{1,2}$ shrinkage operator is replaced with $\ell_1$ shrinkage operator. Please see the following section for details.
+
+\newpage
+\section{Ordered Subspace Clustering}
+
+\begin{align}
+\label{objective}
+\min_{\mathbf Z, \mathbf E} \frac12\|\mathbf E \|^2_F +\lambda_1\|\mathbf Z\|_{1}+\lambda_2\|\mathbf Z\mathbf R\|_{1,2} \\
+\text{s.t.} \quad \mathbf{X = XZ + E} \nonumber
+\end{align}
+
+\subsection{Implementation}
+
+First we remove the variable $\mathbf E$ by using the constraint and thus the objective \eqref{objective} can be re-written as follows,
+\begin{align}
+\label{objective_relaxed}
+\min_{\mathbf Z} \frac12\|\mathbf X - \mathbf X\mathbf S\|^2_F +\lambda_1\|\mathbf Z\|_{1}+\lambda_2\|\mathbf U \|_{1,2}\\
+\text{s.t.} \quad \mathbf{S = Z, U = SR} \nonumber
+\end{align}
+Then the Augmented Lagrangian for the two introduced constraints is
+\begin{align}
+\mathcal{L}(\mathbf Z, \mathbf S, \mathbf U) = & \frac12\|\mathbf X - \mathbf X\mathbf S\|^2_F + \lambda_1 \|\mathbf Z\|_{1} + \lambda_2\|\mathbf U\|_{1,2} \notag\\
+& + \langle \mathbf Y_1, \mathbf Z - \mathbf S\rangle +\frac{\mu_1}2\|\mathbf Z - \mathbf S\|^2_F \notag\\
+& + \langle \mathbf Y_2, \mathbf U - \mathbf S\mathbf R\rangle +\frac{\mu_2}2\|\mathbf U - \mathbf S\mathbf R\|^2_F
+\label{objectiveADMM}
+\end{align}
+
+We can solve \eqref{objectiveADMM} for $\mathbf Z, \mathbf S, \mathbf U$ in an alternative manner when fixing the others, respectively.
+
+\begin{enumerate}
+
+ \item Solve for $\mathbf Z$ by
+\begin{align*}
+ \min_{\mathbf Z} \lambda_1 \|\mathbf Z\|_{1} + \langle \mathbf Y_1, \mathbf Z - \mathbf S\rangle + \frac{\mu_2}2\|\mathbf Z - \mathbf S\|^2_F
+\end{align*}
+
+which is equivalent to
+\begin{align}
+\min_{\mathbf Z} \lambda_1 \|\mathbf Z\|_{1} + \frac{\mu_1}{2}||\mathbf Z - (\mathbf S - \frac{\mathbf Y_1}{\mu_1})||^2_F
+\label{ForZ}
+\end{align}
+Problem \eqref{ForZ} is separable at element level and each has a closed-form solution defined by the soft thresholding operator as follows, see \cite{bach2011convex, liu2010efficient},
+\begin{align}
+\label{SolutionZ_relaxed}
+Z = \textrm{sign}\left(\mathbf S - \frac{\mathbf Y_1}{\mu_1}\right) \max\left(\left|\mathbf S - \frac{\mathbf Y_1}{\mu_1}\right| - \frac{\lambda_1}{\mu_1}\right).
+\end{align}
+
+\item Solve for $\mathbf S$ by
+\begin{align*}
+ \min_{\mathbf S} \frac12\|&\mathbf X -  \mathbf X\mathbf S\|^2_F + \langle \mathbf Y_1, \mathbf Z - \mathbf S\rangle +\frac{\mu_1}2\|\mathbf Z - \mathbf S\|^2_F \notag\\
+&+ \langle \mathbf Y_2, \mathbf U - \mathbf S\mathbf R\rangle +\frac{\mu_2}2\|\mathbf U - \mathbf S\mathbf R\|^2_F
+\end{align*}
+
+Setting the derivative of the above objective with respect to $\mathbf S$ to zero gives
+\begin{align}
+ \mathbf X^T(\mathbf X\mathbf S - \mathbf X) + \mu_1 (\mathbf S - \mathbf Z) + \mu_2(\mathbf S\mathbf R - \mathbf U)\mathbf R^T \notag\\
+ - \mathbf Y_1 - \mathbf Y_2\mathbf R^T = 0
+\end{align}
+ 
+hence the solution is
+\begin{align}
+\label{sylvester}
+ &(\mathbf X^T\mathbf X +\mu_1 I) \mathbf S + \mu_2 \mathbf S \mathbf R\mathbf R^T \\
+ =& \mathbf X^T\mathbf X+ \mu_2\mathbf U\mathbf R^T + \mu_1 \mathbf Z + \mathbf Y_1 + \mathbf Y_2\mathbf R^T \notag
+\end{align}
+ 
+We can vectorize the above linear matrix equation into
+\begin{align*}
+ [I\otimes (\mathbf X^T\mathbf X + \mu_1 I) + \mu_2\mathbf R\mathbf R^T\otimes I]\textrm{vec}(\mathbf S) \notag\\
+ = \textrm{vec}(\mathbf X^T\mathbf X+ \mu_2 \mathbf U\mathbf R^T + \mu_1 \mathbf Z + \mathbf Y_1 + \mathbf Y_2\mathbf R^T)
+\end{align*}
+where $\otimes$ is the tensor product. However this solution is infeasible for large matrices in terms of memory and computation time. Fortunately \eqref{sylvester} is a Sylvester equation of the form
+\[
+\mathbf{A S + S B = C}
+\]
+and has a number of efficient solutions \cite{penzl1998numerical, golub1979hessenberg}.
+
+\item Solve for $\mathbf U$ by
+\begin{align*}
+ \min_{\mathbf U} \lambda_2\|\mathbf U\|_{1,2} + \langle \mathbf Y_2, \mathbf U - \mathbf S\mathbf R\rangle +\frac{\mu_2}2\|\mathbf U - \mathbf S\mathbf R\|^2_F
+\end{align*}
+
+which is equivalent to
+\begin{align*}
+ \min_{\mathbf U} \lambda_2\|\mathbf U\|_{1,2} + \frac{\mu_2}{2}|| \mathbf U - (\mathbf S \mathbf R - \frac{1}{\mu} \mathbf Y_2)||^2_F
+\end{align*}
+Denote by $\mathbf M = \mathbf S \mathbf R - \frac{1}{\mu_2} \mathbf Y_2$, then the above problem has a closed-form solution defined as follows, 
+\begin{align}
+\label{SolutionU_relaxed}
+\mathbf U(:,i) = \begin{cases} \frac{\|\mathbf M(:,i)\| - \frac{\lambda_2}{\mu_2}}{\|\mathbf M(:,i)\|}\mathbf M(:,i) & \textrm{if } \|\mathbf M(:,i)\| > \frac{\lambda_2}{\mu_2} \\
+0 & \textrm{otherwise}
+\end{cases}
+\end{align}
+where $\mathbf U(:,i)$ and $\mathbf M(:,i)$ are the $i$-th columns of $\mathbf U$ and $\mathbf M$, respectively. Please refer to \cite{liu2010robust}.
+
+\item Update $\mathbf Y_1$ and $\mathbf Y_2$ by
+\begin{align*}
+\mathbf Y_1 =& \; \mathbf Y_1 + \mu_1 (\mathbf Z - \mathbf S) \\
+\mathbf Y_2 =& \; \mathbf Y_2 + \mu_2 (\mathbf U - \mathbf S \mathbf R)
+\end{align*}
+
+\item Update $\mu_1$ and $\mu_2$ by
+\begin{align*}
+ \mu_1 = \rho \mu_1\\
+ \mu_2 = \rho \mu_2
+\end{align*}
+
+\end{enumerate}
+
+\newpage
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}
