@@ -23,12 +23,8 @@ for iteration=1:maxIterations
 
     %% Step 1
     V = S - (G/gamma_1);
-    [vm, vn, ~] = size(V);
-    rolled_v = reshape(V,vm*vn,1);
 
-    rolled_z = solve_l1(rolled_v, lambda_1/gamma_1);
-
-    Z = reshape(rolled_z, vm, vn);
+    Z = solve_l1(V, lambda_1/gamma_1);
 
     % Set Z diag to 0
     if (diagconstraint)
@@ -61,7 +57,7 @@ for iteration=1:maxIterations
     gamma_2 = p * gamma_2;
 
     %% Calculate function values
-    funVal(iteration) = .5 * norm(X - X*Z,'fro')^2 + lambda_1*norm(Z,1) +lambda_2*norm(Z*R, 1);
+    funVal(iteration) = .5 * norm(X - X*Z,'fro')^2 + lambda_1*norm_l1(Z) +lambda_2*norm(Z*R, 1);
 
     if iteration > 1
         if funVal(iteration) < 1*10^-3
