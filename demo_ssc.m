@@ -25,7 +25,7 @@ X = normalize(X);
 % Z = ssc_relaxed_lin(X, 0.01);
 % Z = ssc_relaxed_lin_ext(X, 0.01);
 % Z = ssc_relaxed_lin_acc(X, 0.01);
-Z = ssc_exact_fro(X, 0.01);
+Z = ssc_exact_fro(X, 0.99);
 
 figure, imagesc(Z)
 

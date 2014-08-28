@@ -12,7 +12,7 @@ A = rand(rows, n_space) * rand(n_space, n_space);
 permute_inds = reshape(repmat(1:n_space, cluster_size, 1), 1, n_space * cluster_size );
 A = A(:, permute_inds);
 
-corruption = 0;
+corruption = 0.1;
 
 N = randn(size(A)) * corruption;
 
@@ -25,7 +25,7 @@ X = normalize(X);
 % Z = lrr_relaxed_lin(X, 0.01);
 % Z = lrr_relaxed_lin_ext(X, 0.01);
 % Z = lrr_relaxed_lin_acc(X, 0.01);
-Z = lrr_exact_fro(X, 0.01);
+Z = lrr_exact_fro(X, 0.5);
 % Z = r_lrr_fro(X, 100, n_space);
 
 clusters = ncutW(abs(Z) + abs(Z'), n_space);

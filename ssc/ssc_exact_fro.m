@@ -13,7 +13,7 @@ Y = zeros(size(X));
 
 mu = 0.1;
 mu_max = 1;
-rho = (norm(X,2)^2) * 1.1;
+rho = (norm(X,2)^2) * 1.2;
 
 gamma_0 = 1.1;
 
