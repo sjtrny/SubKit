@@ -20,16 +20,15 @@ X = A + N;
 
 X = normalize(X);
 
-maxIteration = 100;
 % lambda_1 = 0.00000001;
 % lambda_2 = 0.00000001;
 % 
-% Z = osc_relaxed(X, lambda_1, lambda_2);
+% Z = osc_relaxed_cvpr(X, lambda_1, lambda_2);
 
 lambda_1 = 0.099;
 lambda_2 = 0.001;
 Z = osc_relaxed(X, lambda_1, lambda_2);
-% 
+
 % lambda_1 = 0.99;
 % lambda_2 = 0.001;
 % Z = osc_exact(X, lambda_1, lambda_2);
