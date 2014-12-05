@@ -1,36 +1,79 @@
-function [ Z, funVal, iteration ] = spatsc_relaxed( X, lambda_1, lambda_2, gamma_1, gamma_2, p, maxIterations, diagconstraint)
+function [ Z ] = spatsc_relaxed( X, lambda_1, lambda_2, diagconstraint)
 
 if (~exist('diagconstraint','var'))
     diagconstraint = 0;
 end
 
-funVal = zeros(maxIterations,1);
+max_iterations = 200;
+
+func_vals = zeros(max_iterations,1);
 
 [~, xn, ~] = size(X);
 
-S = zeros(xn, xn); % S = Z
+Z = zeros(xn, xn);
+Z_prev = Z;
+
 R = (triu(ones(xn,xn-1),1) - triu(ones(xn, xn-1))) + (triu(ones(xn, xn-1),-1)-triu(ones(xn, xn-1)));
 R = sparse(R);
 
 U = zeros(xn, xn-1);
+U_prev = U;
 
-G = zeros(xn, xn);
-F = zeros(xn, xn-1); 
+Y_2 = zeros(xn, xn-1);
 
-Z = zeros(xn, xn);
+if (~exist('mu','var'))
+    mu = 0.1;
+end
 
-for iteration=1:maxIterations
+mu_max = 10;  %1;  % 0.001;
+gamma_0 = 1.1;
 
+<<<<<<< HEAD
     %% Step 1
     V = S - (G/gamma_1);
 
     Z = solve_l1(V, lambda_1/gamma_1);
+=======
+normfX = norm(X,'fro');
+rho = (norm(X)^2) * 1.1;  %1.1;
+  
+tol_1 = 1*10^0;
+tol_2 = 1*10^-4;
 
+covar = X'*X;
+lam_2_ctrl = max(lambda_2/lambda_2, 0);
+
+for k = 1 : max_iterations
+>>>>>>> LADMPSAP-OSC/SpatSC
+
+    %Update Z
+    partial = -covar  + covar*Z_prev - lam_2_ctrl*mu*(U_prev - Z_prev*R + 1/mu *Y_2)*R' ;
+    
+    V = Z_prev - 1/rho* partial;
+    
+    Z = solve_l1(V, lambda_1/rho);
+    
     % Set Z diag to 0
     if (diagconstraint)
         Z(logical(eye(size(Z)))) = 0;
     end
+    
+    %Update J
+    partial = mu*(U_prev - Z_prev*R + 1/mu *Y_2);
+    V = U_prev - 1/rho * partial;
 
+    U = solve_l1(V, lambda_2/rho);
+    
+    Y_2 = lam_2_ctrl*(Y_2 + mu * (U - Z*R));
+
+    % Update mu
+    if (mu * max([norm(Z - Z_prev,'fro'), norm(U - U_prev,'fro')] / normfX) < tol_2)
+        gamma_1 = gamma_0;
+    else
+        gamma_1 = 1;
+    end
+
+<<<<<<< HEAD
     %% Step 2
     A = X'*X + gamma_1*speye(xn,xn);
     B = gamma_2*(R*R');
@@ -58,20 +101,25 @@ for iteration=1:maxIterations
 
     %% Calculate function values
     funVal(iteration) = .5 * norm(X - X*Z,'fro')^2 + lambda_1*norm_l1(Z) +lambda_2*norm(Z*R, 1);
+=======
+    mu = min(mu_max, gamma_1 * mu);
+    
+    % Check convergence
+    func_vals(k) = .5 * norm(X - X*Z,'fro')^2 + lambda_1*norm_l1(Z) +lambda_2*norm_l1(Z*R);
+>>>>>>> LADMPSAP-OSC/SpatSC
 
-    if iteration > 1
-        if funVal(iteration) < 1*10^-3
-            break
-        end
+    if ( k > 1 && norm(U - Z*R, 'fro') < tol_1 ...
+            && mu * max([norm(Z - Z_prev,'fro'), norm(U - U_prev,'fro')] / normfX) < tol_2)
+        break;
     end
-
-    if iteration > 100
-        if funVal(iteration) < 1*10^-3 || funVal(iteration-1) == funVal(iteration) ...
-                || funVal(iteration-1) - funVal(iteration) < 1*10^-3
-            break
-        end
+    
+    if ( k > 5 && abs(func_vals(k) - func_vals(k-1)) < 1*10^-4)
+        break
     end
-
+    
+    % Update prev vals
+    Z_prev = Z;
+    U_prev = U;
 
 end
 

@@ -11,7 +11,6 @@ function [ A ] = rpca_l1l2( X, lambda )
 max_iterations = 100;
 
 func_vals = zeros(max_iterations, 1);
-previous_func_val = Inf;
 
 A = zeros(size(X));
 
@@ -23,6 +22,11 @@ mu = 0.5;
 mu_max = 100;
 
 gamma_0 = 1.1;
+
+normfX = norm(X,'fro');
+
+tol_1 = 1*10^-2;
+tol_2 = 1*10^-4;
 
 for k = 1 : max_iterations
 
@@ -57,10 +61,13 @@ for k = 1 : max_iterations
     
     func_vals(k) = sum(s) + lambda*norm_l1l2(N);
     
-    if ( abs(func_vals(k) - previous_func_val) <= 1*10^-6 )
+    % Check convergence
+    
+    func_vals(k) = sum(s) + lambda*0.5*norm(N, 'fro')^2;
+
+    if ( norm(X - A - N, 'fro') < tol_1 ...
+            && (mu * max([ norm(A - A_prev,'fro'), norm(N - N_prev, 'fro')]) / normfX < tol_2))
         break;
-    else
-        previous_func_val = func_vals(k);
     end
     
 end
