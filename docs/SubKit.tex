@@ -191,6 +191,12 @@ Then iterate the following
 \mathbf Y = \mathbf Y + \mu (\mathbf{Z - J})
 \]
 
+\item Check stopping criteria
+\[
+\| \mathbf Z - \mathbf J \|_F  < \epsilon_1, \;
+\mu \; \textrm{max} ( \| \mathbf Z_{k+1} - \mathbf Z_{k}  \|_F  , \|  \mathbf J_{k+1} - \mathbf J_{k} \|_F) < \epsilon_2
+\]
+
 \end{enumerate}
 
 \subsection{Relaxed SSC Linearised}
@@ -212,7 +218,7 @@ This version consists on iterating the following until convergence
 
 \subsubsection{Extended Gradient Algorithm}
 
-It has been shown that through the correct choice of step size $\rho$ the gradient method can achieve a convergence rate of $\BigO{\frac{1}{k}}$ \cite{ji2009accelerated}. More specifically we require that $\rho \geq C$ where $C$ is the Lipschitz constant. However we do not know the value of $C$ in advance. Fortunately we know that if $L(\mathbf B) \leq \widetilde{L}_{\rho}(\mathbf B, \mathbf Z_{k-1})$ where $\mathbf B = \mathcal S_{\frac{\lambda}{\rho}}(\mathbf Z_{k-1} - \frac1{\lambda}\partial L(\mathbf Z_{k-1}))$ then $\rho \geq C$. 
+It has been shown that through the correct choice of step size $\rho$ the gradient method can achieve a convergence rate of $\BigO{\frac{1}{k}}$ \cite{ji2009accelerated}. More specifically we require that $\rho \geq C$ where $C$ is the Lipschitz constant. However we do not know the value of $C$ in advance. Fortunately we know that if $L(\mathbf B) \leq \widetilde{L}_{\rho}(\mathbf B, \mathbf Z_{k-1})$ where $\mathbf B = \mathcal S_{\frac{\lambda}{\rho}}(\mathbf Z_{k-1} - \frac1{\lambda}\partial F(\mathbf Z_{k-1}))$ then $\rho \geq C$. 
 
 \begin{algorithm}
 \caption{Extended Gradient Descent for Robust MC}
@@ -239,7 +245,7 @@ It has been shown that through the correct choice of step size $\rho$ the gradie
 
 \subsubsection{Accelerated Gradient Algorithm}
 
-We can further improve our convergence rate to $\BigO{\frac{1}{k^2}}$ by adopting Nesterov's accelerated gradient algorithm. This is similar to the algorithm described in \cite{ji2009accelerated}. Let $\mathbf B = \mathcal S_{\frac{\lambda}{\rho}}(\mathbf J_{k-1} - \frac1{\rho}\partial L(\mathbf J_{k-1}))$.
+We can further improve our convergence rate to $\BigO{\frac{1}{k^2}}$ by adopting Nesterov's accelerated gradient algorithm. This is similar to the algorithm described in \cite{ji2009accelerated}. Let $\mathbf B = \mathcal S_{\frac{\lambda}{\rho}}(\mathbf J_{k-1} - \frac1{\rho}\partial F(\mathbf J_{k-1}))$.
 
 \begin{algorithm}
 \caption{Accelerated Gradient Descent for Robust MC}
@@ -319,11 +325,17 @@ where $\gamma$ is defined as
 \[
 \gamma = 
 \begin{cases}
-\gamma_0 & \text{if} \;\; \mu_k \frac{\textrm{max} (  \sqrt{\rho} \| \mathbf Z_{k+1} - \mathbf Z_{k}  \|_F  , \|  \mathbf E_{k+1} - \mathbf E_{k} \|_F)}{\| \mathbf X \|_F} < \epsilon \\
+\gamma_0 & \text{if} \;\; \mu_k \sqrt{\rho} \frac{\textrm{max} (   \| \mathbf Z_{k+1} - \mathbf Z_{k}  \|_F  , \|  \mathbf E_{k+1} - \mathbf E_{k} \|_F)}{\| \mathbf X \|_F} < \epsilon \\
 1 & \text{otherwise,}
 \end{cases}
 \]
 and $\rho > \| \mathbf X \|_F^2$,  $\mu_{\text{max}} >>  \mu_0$ and $\epsilon > 0$.
+
+\item Check stopping criteria
+\[
+\frac{\| \mathbf X \mathbf Z_{k+1} - \mathbf X + \mathbf E_{k+1}  \|_F}{ \| \mathbf X \|_F} < \epsilon_1, \;
+ \mu_k \sqrt{\rho} \frac{\textrm{max} ( \| \mathbf Z_{k+1} - \mathbf Z_{k}  \|_F  , \|  \mathbf E_{k+1} - \mathbf E_{k} \|_F)}{\| \mathbf X \|_F} < \epsilon_2
+\]
 
 \end{enumerate}
 
@@ -401,77 +413,53 @@ SpatSC can be implemented similarly to OSC. However the $\ell_{1,2}$ shrinkage o
 First we remove the variable $\mathbf E$ by using the constraint and thus the objective \eqref{objective} can be re-written as follows,
 \begin{align}
 \label{objective_relaxed}
-\min_{\mathbf Z} \frac12\|\mathbf X - \mathbf X\mathbf S\|^2_F +\lambda_1\|\mathbf Z\|_{1}+\lambda_2\|\mathbf J \|_{1,2}\\
-\text{s.t.} \quad \mathbf{S = Z, J = SR} \nonumber
+\min_{\mathbf Z} \frac12\|\mathbf X - \mathbf X\mathbf Z\|^2_F +\lambda_1\|\mathbf Z\|_{1}+\lambda_2\|\mathbf J \|_{1,2}\\
+\text{s.t.} \quad \mathbf{J = ZR} \nonumber
 \end{align}
+
 Then the Augmented Lagrangian for the two introduced constraints is
 \begin{align}
-\mathcal{L}(\mathbf Z, \mathbf S, \mathbf U) = & \frac12\|\mathbf X - \mathbf X\mathbf S\|^2_F + \lambda_1 \|\mathbf Z\|_{1} + \lambda_2\|\mathbf U\|_{1,2} \notag\\
-& + \langle \mathbf Y_1, \mathbf Z - \mathbf S\rangle +\frac{\mu^k}2\|\mathbf Z - \mathbf S\|^2_F \notag\\
-& + \langle \mathbf Y_2, \mathbf J - \mathbf S\mathbf R\rangle +\frac{\mu^k}2\|\mathbf J - \mathbf S\mathbf R\|^2_F
+\mathcal{L}(\mathbf Z, \mathbf J) = & \frac12\|\mathbf X - \mathbf X\mathbf Z\|^2_F + \lambda_1 \|\mathbf Z\|_{1} + \lambda_2\|\mathbf J\|_{1,2} \notag\\
+& + \langle \mathbf Y_1, \mathbf J - \mathbf Z\mathbf R\rangle +\frac{\mu^k}2\|\mathbf J - \mathbf Z\mathbf R\|^2_F 
 \label{objectiveADMM}
 \end{align}
 
-We can solve \eqref{objectiveADMM} for $\mathbf Z, \mathbf S, \mathbf U$ in an alternative manner when fixing the others, respectively.
+We can solve \eqref{objectiveADMM} for $\mathbf Z$ and $\mathbf J$ in an alternative manner when fixing the others, respectively.
 
 \begin{enumerate}
 
- \item Set $\mathbf S = \mathbf S^k$ and $\mathbf J = \mathbf J^k$, solve for $\mathbf Z^{k+1}$ by
+\item Set $\mathbf J = \mathbf J^k$, solve for $\mathbf Z^{k+1}$ by
 \begin{align*}
- \min_{\mathbf Z} \lambda_1 \|\mathbf Z\|_{1} + \langle \mathbf Y^k_1, \mathbf Z - \mathbf S\rangle + \frac{\mu^k}2\|\mathbf Z - \mathbf S\|^2_F
+\lambda_1 \|\mathbf Z\|_{1} + \frac12\|\mathbf X - \mathbf X\mathbf Z\|^2_F + \langle \mathbf Y, \mathbf J - \mathbf Z\mathbf R\rangle +\frac{\mu^k}2\|\mathbf J - \mathbf Z\mathbf R\|^2_F 
 \end{align*}
-
 which is equivalent to
-\begin{align}
-\min_{\mathbf Z} \lambda_1 \|\mathbf Z\|_{1} + \frac{\mu^k}{2}||\mathbf Z - (\mathbf S - \frac{\mathbf Y^k_1}{\mu^k})||^2_F
-\label{ForZ}
-\end{align}
-
-\item Set $\mathbf Z = \mathbf Z^k$ and $\mathbf J = \mathbf J^k$, solve for $\mathbf S^{k+1}$ by
 \begin{align*}
- \min_{\mathbf\mu^k S} \frac12\|&\mathbf X -  \mathbf X\mathbf S\|^2_F + \langle \mathbf Y^k_1, \mathbf Z - \mathbf S\rangle +\frac{\mu^k}2\|\mathbf Z - \mathbf S\|^2_F \notag\\
-&+ \langle \mathbf Y^k_2, \mathbf J - \mathbf S\mathbf R\rangle +\frac{\mu^k}2\|\mathbf J - \mathbf S\mathbf R\|^2_F
+\lambda_1 \|\mathbf Z\|_{1} + \frac12\|\mathbf X - \mathbf X\mathbf Z\|^2_F + \frac{\mu^k}2\|\mathbf J - \mathbf Z\mathbf R + \frac{1}{\mu} \mathbf Y \|^2_F
 \end{align*}
-
-Setting the derivative of the above objective with respect to $\mathbf S$ to zero gives
-\begin{align}
- \mathbf X^T(\mathbf X\mathbf S - \mathbf X) + \mu^k (\mathbf S - \mathbf Z) + \mu^k(\mathbf S\mathbf R - \mathbf J)\mathbf R^T \notag\\
- - \mathbf Y^k_1 - \mathbf Y^k_2\mathbf R^T = 0
-\end{align}
- 
-hence the solution is
-\begin{align}
-\label{sylvester}
- &(\mathbf X^T\mathbf X +\mu^k I) \mathbf S + \mu^k \mathbf S \mathbf R\mathbf R^T \\
- =& \mathbf X^T\mathbf X+ \mu^k\mathbf J \mathbf R^T + \mu^k \mathbf Z + \mathbf Y^k_1 + \mathbf Y^k_2\mathbf R^T \notag
-\end{align}
- 
-We can vectorize the above linear matrix equation into
+We linearise the last two terms which we call $F$
 \begin{align*}
- [I\otimes (\mathbf X^T\mathbf X + \mu^k I) + \mu^k\mathbf R\mathbf R^T\otimes I]\textrm{vec}(\mathbf S) \notag\\
- = \textrm{vec}(\mathbf X^T\mathbf X+ \mu^k \mathbf J \mathbf R^T + \mu^k \mathbf Z + \mathbf Y^k_1 + \mathbf Y^k_2\mathbf R^T)
+\min_{\mathbf Z} \lambda_1 \| \mathbf Z \|_1 + \frac{\rho}{2} \| \mathbf Z - (\mathbf Z_{k-1} - \frac{1}{\rho} \partial F) \|_F^2
 \end{align*}
-where $\otimes$ is the tensor product. However this solution is infeasible for large matrices in terms of memory and computation time. Fortunately \eqref{sylvester} is a Sylvester equation of the form
+and $\partial F = \mathbf X^T(\mathbf{X - XZ}) + \mu (\mathbf J - \mathbf Z\mathbf R + \frac{1}{\mu} \mathbf Y)\mathbf R^T$.
+
+\item Set $\mathbf Z = \mathbf Z^k$, solve for $\mathbf J^{k+1}$ by
+\begin{align*}
+\lambda_2\|\mathbf J\|_{1,2} + \langle \mathbf Y_1, \mathbf J - \mathbf Z\mathbf R\rangle +\frac{\mu^k}2\|\mathbf J - \mathbf Z\mathbf R\|^2_F 
+\end{align*}
+which is equivalent to
+\begin{align*}
+\lambda_2\|\mathbf J\|_{1,2} + \frac{\mu^k}2\|\mathbf J - \mathbf Z\mathbf R + \frac{1}{\mu} \mathbf Y \|^2_F
+\end{align*}
+We linearise the last term which we call $F$
+\begin{align*}
+\min_{\mathbf J} \lambda_2\|\mathbf J\|_{1,2}+ \frac{\rho}{2} \| \mathbf J - (\mathbf J_{k-1} - \frac{1}{\rho} \partial F) \|_F^2
+\end{align*}
+and $\partial F = \mu (\mathbf J - \mathbf Z\mathbf R + \frac{1}{\mu} \mathbf Y)$.
+
+\item Update $\mathbf Y$
 \[
-\mathbf{A S + S B = C}
+\mathbf Y = \mathbf Y + \mu (\mathbf J - \mathbf Z\mathbf R)
 \]
-and has a number of efficient solutions.
-
-\item Set $\mathbf Z = \mathbf Z^k$ and $\mathbf S = \mathbf S^k$, solve for $\mathbf J^{k+1}$ by
-\begin{align*}
- \min_{\mathbf J} \lambda_2\|\mathbf J\|_{1,2} + \langle \mathbf Y^k_2, \mathbf J - \mathbf S\mathbf R\rangle +\frac{\mu^k}2\|\mathbf J - \mathbf S\mathbf R\|^2_F
-\end{align*}
-
-which is equivalent to
-\begin{align*}
- \min_{\mathbf J} \lambda_2\|\mathbf J\|_{1,2} + \frac{\mu^k}{2}|| \mathbf J - (\mathbf S \mathbf R - \frac{1}{\mu^k} \mathbf Y^k_2)||^2_F
-\end{align*}
-
-\item Update $\mathbf Y_1$ and $\mathbf Y_2$ by
-\begin{align*}
-\mathbf Y^{k+1}_1 =& \; \mathbf Y^k_1 + \mu^k (\mathbf Z - \mathbf S) \\
-\mathbf Y^{k+1}_2 =& \; \mathbf Y^k_2 + \mu^k (\mathbf J - \mathbf S \mathbf R)
-\end{align*}
 
 \item Update $\mu$
 \begin{align*}
@@ -481,19 +469,17 @@ where $\gamma$ is defined as
 \[
 \gamma = 
 \begin{cases}
-\gamma^0 & \text{if} \;\; \mu^k \frac{\textrm{max} ( \| \mathbf Z^{k+1} - \mathbf Z^{k}  \|_F  , \|  \mathbf S^{k+1} - \mathbf S^{k} \|, \| \mathbf J^{k+1} - \mathbf J^{k}  \|_F  , \|  \mathbf S^{k+1} \mathbf R - \mathbf S^{k} \mathbf R \|)}{\|\mathbf X \|} < \epsilon_2 \\
+\gamma^0 & \text{if} \;\; \mu^k \textrm{max} ( \| \mathbf Z^{k+1} - \mathbf Z^{k}  \|_F  , \|  \mathbf J^{k+1} - \mathbf J^{k} \|_F) < \epsilon_2 \\
 1 & \text{otherwise,}
 \end{cases}
 \]
 
-and $\mu^{\text{max}} >>  \mu^0$ and $\epsilon > 0$.
+and $\mu^{\text{max}} \gg  \mu^0$.
 
 \item Check stopping criteria
 \[
-\frac{\|\mathbf Z^{k+1} - \mathbf S^{k+1} \|_F}{\|\mathbf X \|} < \epsilon_1, \frac{\|\mathbf J^{k+1} - \mathbf S^{k+1} \mathbf R \|_F}{\|\mathbf X \|} < \epsilon_1,
-\]
-\[
-\mu^k \frac{\textrm{max} ( \| \mathbf Z^{k+1} - \mathbf Z^{k}  \|_F  , \|  \mathbf S^{k+1} - \mathbf S^{k} \|, \| \mathbf J^{k+1} - \mathbf J^{k}  \|_F  , \|  \mathbf S^{k+1} \mathbf R - \mathbf S^{k} \mathbf R \|)}{\|\mathbf X \|} < \epsilon_2
+\|\mathbf J^{k+1} - \mathbf Z^{k+1} \mathbf R \|_F < \epsilon_1, \;
+\mu^k \sqrt{\rho} \; \textrm{max} ( \| \mathbf Z^{k+1} - \mathbf Z^{k}  \|_F  , \|  \mathbf J^{k+1} - \mathbf J^{k} \|) < \epsilon_2
 \]
 
 \end{enumerate}
@@ -566,7 +552,7 @@ where $\gamma$ is defined as
 \end{cases}
 \]
 
-where $\rho > \|\mathbf X\|_F^2$, $\mu^{\text{max}} >>  \mu^0$ and $\epsilon > 0$.
+where $\rho > \|\mathbf X\|_F^2$ and $\mu^{\text{max}} \gg  \mu^0$.
 
 \item Check stopping criteria
 \[

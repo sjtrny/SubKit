@@ -3,7 +3,6 @@ function [ Z ] = lrr_exact_l1( X, lambda )
 max_iterations = 200;
 
 func_vals = zeros(max_iterations, 1);
-previous_func_val = Inf;
 
 Z = zeros(size(X, 2));
 
@@ -13,9 +12,14 @@ Y = zeros(size(X));
 
 mu = 0.1;
 mu_max = 1;
-rho = (norm(X,2)^2) * 1.1;
+
+normfX = norm(X,'fro');
+rho = (norm(X,2)^2) * 1.2;
 
 gamma_0 = 1.1;
+
+tol_1 = 1*10^-2;
+tol_2 = 1*10^-4;
 
 for k = 1 : max_iterations
 
@@ -30,9 +34,11 @@ for k = 1 : max_iterations
     
     [Z, s] = solve_nn(V, lambda/rho);
     
+    Z(logical(eye(size(Z)))) = 0;
+    
     % Solve for E
     
-    V = X - X*Z_prev - 1/mu * Y;
+    V = X - X*Z - 1/mu * Y;
     
     E = solve_l1(V, 1/mu);
     
@@ -49,13 +55,12 @@ for k = 1 : max_iterations
     mu = min(mu_max, gamma * mu);
     
     % Check convergence
+
+    func_vals(k) = norm_l1(E) + lambda * sum(s);
     
-    func_vals(k) = 0.5*norm(X - X*Z, 'fro')^2 + lambda * sum(s);
-    
-    if ( abs(func_vals(k) - previous_func_val) <= 1*10^-6 )
+    if ( norm(X*Z - X + E, 'fro')/normfX < tol_1 ...
+            && (mu * sqrt(rho) * max([ norm(Z - Z_prev,'fro'), norm(E - E_prev, 'fro')]/normfX) < tol_2))
         break;
-    else
-        previous_func_val = func_vals(k);
     end
     
 end

@@ -5,7 +5,7 @@ rng(1);
 
 rows = 100;
 n_space = 5;
-cluster_size = 50;
+cluster_size = 20;
 
 A = rand(rows, n_space) * rand(n_space, n_space);
 
@@ -16,16 +16,19 @@ corruption = 0;
 
 N = randn(size(A)) * corruption;
 
+% weights = randn(1, 100);
+% A = A * diag(weights);
+
 X = A + N;
 
 X = normalize(X);
 
 % Z = ssc_noisefree(X);
-% Z = ssc_relaxed(X, 0.01);
+Z = ssc_relaxed(X, 0.01);
 % Z = ssc_relaxed_lin(X, 0.01);
 % Z = ssc_relaxed_lin_ext(X, 0.01);
-% Z = ssc_relaxed_lin_acc(X, 0.01);
-Z = ssc_exact_fro(X, 0.99);
+% Z = ssc_relaxed_lin_acc(X, 0.2);
+% Z = ssc_exact_fro(X, 0.9);
 
 figure, imagesc(Z)
 
@@ -33,6 +36,6 @@ clusters = ncutW(abs(Z) + abs(Z'), n_space);
 
 final_clusters = condense_clusters(clusters, 1);
 
-imagesc(final_clusters);
+figure, imagesc(final_clusters);
 
 rmpath(paths);

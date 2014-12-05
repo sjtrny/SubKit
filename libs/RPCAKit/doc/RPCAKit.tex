@@ -100,11 +100,19 @@ where $\rho$ is defined as
 \[
 \gamma = 
 \begin{cases}
-\gamma_0 & \text{if} \;\; \mu_k \frac{\textrm{max} ( \| \mathbf A_{k+1} - \mathbf A_{k}  \|_F  , \|  \mathbf N_{k+1} - \mathbf N_{k})}{\| \mathbf X \|_F} < \epsilon \\
+\gamma_0 & \text{if} \;\; \mu_k \frac{\textrm{max} ( \| \mathbf A_{k+1} - \mathbf A_{k}  \|_F  , \|  \mathbf N_{k+1} - \mathbf N_{k} \|_F)}{\| \mathbf X \|_F} < \epsilon_2 \\
 1 & \text{otherwise,}
 \end{cases}
 \]
 $\mu_{\text{max}} >>  \mu_0$ and $\epsilon > 0$.
+
+\item Check stopping criteria
+\[
+\|\mathbf X - \mathbf A^{k+1}  - \mathbf N^{k+1} \|_F < \epsilon_1, \;
+ \mu_k \frac{\textrm{max} ( \| \mathbf A_{k+1} - \mathbf A_{k}  \|_F  , \|  \mathbf N_{k+1} - \mathbf N_{k} \|_F)}{\| \mathbf X \|_F} < \epsilon_2
+\]
+
+
 \end{enumerate}
 
 \bibliographystyle{plain}
