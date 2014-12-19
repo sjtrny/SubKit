@@ -34,8 +34,6 @@ for k = 1 : max_iterations
     
     [Z, s] = solve_nn(V, lambda/rho);
     
-    Z(logical(eye(size(Z)))) = 0;
-    
     % Solve for E
     
     V = X - X*Z - 1/mu * Y;
