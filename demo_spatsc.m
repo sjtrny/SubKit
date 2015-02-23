@@ -25,13 +25,13 @@ X = normalize(X);
 % 
 % Z = spatsc_relaxed_cvpr(X, lambda_1, lambda_2);
 
-lambda_1 = 0.099;
-lambda_2 = 0.001;
-Z = spatsc_relaxed(X, lambda_1, lambda_2);
-
-% lambda_1 = 0.99;
+% lambda_1 = 0.099;
 % lambda_2 = 0.001;
-% Z = spatsc_exact(X, lambda_1, lambda_2);
+% Z = spatsc_relaxed(X, lambda_1, lambda_2);
+
+lambda_1 = 0.99;
+lambda_2 = 0.001;
+Z = spatsc_exact(X, lambda_1, lambda_2);
 
 clusters = ncutW(abs(Z) + abs(Z'), n_space);
 

@@ -46,7 +46,7 @@ for k = 1 : max_iterations
     
     Y = Y + mu*(X*Z -X + E);
     
-    if (mu * max(sqrt(rho) * norm(Z - Z_prev,'fro'), norm(E - E_prev))/norm(X,'fro') < 1*10^-3)
+    if (mu * max(sqrt(rho) * norm(Z - Z_prev,'fro'), norm(E - E_prev))/norm(X,'fro') < tol_2)
         gamma = gamma_0;
     else
         gamma = 1;

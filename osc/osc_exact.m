@@ -41,7 +41,7 @@ tol_2 = 1*10^-4;
 for k = 1 : max_iterations
 
     % Update Z
-    partial =  mu*(X' * (X * Z_prev - (X - E_prev - 1/mu * Y_1)) ) + (Z_prev*R - (J_prev + 1/mu * Y_2)) * R';
+    partial =  mu*(X' * (X * Z_prev - (X - E_prev - 1/mu * Y_1))  + (Z_prev*R - (J_prev + 1/mu * Y_2)) * R');
     
     V = Z_prev  -  1/rho* partial;
     

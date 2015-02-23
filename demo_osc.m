@@ -12,7 +12,7 @@ A = rand(rows, n_space) * rand(n_space, n_space);
 permute_inds = reshape(repmat(1:n_space, cluster_size, 1), 1, n_space * cluster_size );
 A = A(:, permute_inds);
 
-corruption = 0.1;
+corruption = 0;
 
 N = randn(size(A)) * corruption;
 
