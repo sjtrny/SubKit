@@ -1,4 +1,4 @@
-function [ Z ] = spatsc_relaxed( X, lambda_1, lambda_2, diagconstraint, mu)
+function [ Z ] = osc_relaxed( X, lambda_1, lambda_2, diagconstraint, mu)
 
 if (~exist('diagconstraint','var'))
     diagconstraint = 0;
@@ -57,7 +57,7 @@ for k = 1 : max_iterations
     partial = mu*(U_prev - Z_prev*R + 1/mu *Y_2);
     V = U_prev - 1/rho * partial;
 
-    U = solve_l1(V, lambda_2/rho);
+    U = solve_l1l2(V, lambda_2/rho);
     
     Y_2 = lam_2_ctrl*(Y_2 + mu * (U - Z*R));
 
@@ -71,7 +71,7 @@ for k = 1 : max_iterations
     mu = min(mu_max, gamma_1 * mu);
     
     % Check convergence
-    func_vals(k) = .5 * norm(X - X*Z,'fro')^2 + lambda_1*norm_l1(Z) +lambda_2*norm_l1(Z*R);
+    func_vals(k) = .5 * norm(X - X*Z,'fro')^2 + lambda_1*norm_l1(Z) +lambda_2*norm_l1l2(Z*R);
 
     if ( k > 1 && norm(U - Z*R, 'fro') < tol_1 ...
             && mu * max([norm(Z - Z_prev,'fro'), norm(U - U_prev,'fro')] / normfX) < tol_2)
