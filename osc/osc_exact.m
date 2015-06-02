@@ -1,5 +1,5 @@
 function [ Z ] = osc_exact( X, lambda_1, lambda_2, mu, diagconstraint )
-%% Solves the followingr
+%% Solves the following
 %
 % min || E ||_F^2 + lambda_1 || Z ||_1 + lambda_2 || Z R ||_1/2
 %   s.t. X = XZ + E
