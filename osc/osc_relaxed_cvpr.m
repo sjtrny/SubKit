@@ -1,4 +1,13 @@
 function [ Z ] = osc_relaxed_cvpr( X, lambda_1, lambda_2, diagconstraint)
+%% Solves the following
+%
+% min || X - XZ ||_F^2 + lambda_1 || Z ||_1 + lambda_2 || Z R ||_1/2
+%
+% via ADM
+%
+% Created by Stephen Tierney
+% stierney@csu.edu.au
+%
 
 if (~exist('diagconstraint','var'))
     diagconstraint = 0;

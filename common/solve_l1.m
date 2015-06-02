@@ -1,19 +1,13 @@
 function [ x ] = solve_l1( b, lambda )
-% Function to solve soft thresholding problem
+%% Solves the following
 %
-% arg min_{x} ||x - b||_{2}^{2} + lambda*||x||_{1}
+%   arg min_{x} || x - b ||_2^2 + lambda || x ||_1
+%
+% Created by Stephen Tierney
+% stierney@csu.edu.au
 %
 
-x = zeros(size(b));
-
-k = find(b > lambda);
-x(k) = b(k) - lambda; 
-
-k = find(abs(b) <= lambda);
-x(k) = 0; 
-
-k = find(b < - lambda);
-x(k) = b(k) + lambda;
+x = sign(b).*max(abs(b) - lambda, 0);
 
 end
 

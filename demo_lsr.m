@@ -1,4 +1,4 @@
-paths = ['common:', genpath('libs'), 'spatsc:'];
+paths = ['common:', genpath('libs'), 'lsr:'];
 addpath(paths);
 
 rng(1);
@@ -21,9 +21,7 @@ X = A + N;
 
 X = normalize(X);
 
-lambda_1 = 0.099;
-lambda_2 = 0.001;
-Z = spatsc_relaxed(X, lambda_1, lambda_2);
+Z = lsr_relaxed(X, 0.01);
 
 clusters = ncutW(abs(Z) + abs(Z'), n_space);
 

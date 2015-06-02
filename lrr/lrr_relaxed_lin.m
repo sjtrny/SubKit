@@ -1,4 +1,13 @@
 function [ Z ] = lrr_relaxed_lin( X, lambda )
+%% Solves the following
+%
+% min || X - XZ ||_F^2 + lambda || Z ||_*
+%
+% by gradient descent
+%
+% Created by Stephen Tierney
+% stierney@csu.edu.au
+%
 
 max_iterations = 100;
 

@@ -1,4 +1,12 @@
 function [ Z ] = osc_exact( X, lambda_1, lambda_2, mu, diagconstraint )
+%% Solves the followingr
+%
+% min || E ||_F^2 + lambda_1 || Z ||_1 + lambda_2 || Z R ||_1/2
+%   s.t. X = XZ + E
+%
+% Created by Stephen Tierney
+% stierney@csu.edu.au
+%
 
 if (~exist('diagconstraint','var'))
     diagconstraint = 0;
@@ -53,21 +61,11 @@ for k = 1 : max_iterations
     end
     
     % Update E
-%     partial = mu*(X*Z_prev - X + 1/mu * Y_1);
-%     V = E_prev - 1/rho * partial;
-%     
-%     E = solve_l2(V, 1/rho);
-    
     V = -X*Z_prev + X - 1/mu * Y_1;
     
     E = solve_l2(V, 1/mu);
     
     % Update J    
-%     partial = mu*(J_prev - Z_prev*R + 1/mu *Y_2);
-%     V = J_prev - 1/rho * partial;
-% 
-%     J = solve_l1l2(V, lambda_2/rho);
-
     J = solve_l1l2(Z_prev*R - 1/mu *Y_2, lambda_2/mu);
 
     % Update Y_1 and Y_2

@@ -1,6 +1,9 @@
 function t = condense_clusters(s,width)
-    % Condense the clusters into a single vector
-    
+%% Condense the clusters into a single vector
+%
+% Created by Stephen Tierney
+% stierney@csu.edu.au
+%
     [~, idx] = sort(sum(s,1),'descend');
     s = s(:,idx);
     

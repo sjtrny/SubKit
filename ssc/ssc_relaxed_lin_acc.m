@@ -1,4 +1,13 @@
 function [ Z ] = ssc_relaxed_lin_acc( X, lambda )
+%% Solves the following
+%
+% min || X - XZ ||_F^2 + lambda || Z ||_1
+%
+% by accelerated gradient descent
+%
+% Created by Stephen Tierney
+% stierney@csu.edu.au
+%
 
 max_iterations = 100;
 

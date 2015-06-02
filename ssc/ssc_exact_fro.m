@@ -1,4 +1,12 @@
 function [ Z ] = ssc_exact_fro( X, lambda )
+%% Solves the following
+%
+% min || E ||_F^2 + lambda || Z ||_1
+%   s.t. X = XZ + E
+%
+% Created by Stephen Tierney
+% stierney@csu.edu.au
+%
 
 max_iterations = 200;
 

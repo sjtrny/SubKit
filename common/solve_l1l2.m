@@ -1,6 +1,11 @@
 function [ E ] = solve_l1l2( W, lambda )
-%MYSOLVE_L1L2 Summary of this function goes here
-%   Detailed explanation goes here
+%% Solves the following
+%
+%   arg min_{x} || X - W ||_2^2 + lambda || X ||_1/2
+%
+% Created by Stephen Tierney
+% stierney@csu.edu.au
+%
 
 [m, n] = size(W);
 

@@ -4,7 +4,7 @@ function [ A ] = rpca_l1l2( X, lambda )
 % min || A ||_* + lambda * || N ||_1/2
 %   s.t. X = A + N
 %
-% Stephen Tierney
+% Created by Stephen Tierney
 % stierney@csu.edu.au
 %
 

@@ -4,7 +4,7 @@ function [ A ] = rpca_fro( X, lambda )
 % min || A ||_* + lambda/2 * || N ||_F^2
 %   s.t. X = A + N
 %
-% Stephen Tierney
+% Created by Stephen Tierney
 % stierney@csu.edu.au
 %
 
