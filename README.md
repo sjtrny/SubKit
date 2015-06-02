@@ -9,6 +9,8 @@ Subkit currently implements the following algorithms:
 - [Low-Rank Subspace Clustering][4]
 - [Spatial Subspace Clustering] [5]
 - [Ordered Subspace Clustering][3]
+- [Robust and Effcient Subspace Segmentation via Least Squares Regression][7]
+- [Multi-task Low-rank Affinity Pursuit for Image Segmenation][8]
 
 ## Acknowledgement
 
@@ -24,3 +26,5 @@ The research project is supported by the Australian Research Council (ARC) throu
 [4]: http://machinelearning.wustl.edu/mlpapers/paper_files/icml2010_LiuLY10.pdf
 [5]: http://sdiwc.net/digital-library/web-admin/upload-pdf/00000406.pdf
 [6]: http://vision.jhu.edu/assets/SSC-CVPR09-Ehsan.pdf
+[7]: http://arxiv.org/abs/1404.6736
+[8]: http://research.microsoft.com/en-us/um/people/jingdw/pubs/iccv11-segmentation.pdf
