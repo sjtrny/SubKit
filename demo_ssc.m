@@ -3,34 +3,25 @@ addpath(paths);
 
 rng(1);
 
-rows = 100;
+dim_data = 100;
+dim_space = 4;
 n_space = 5;
 cluster_size = 20;
+m = 0.1;
+v = 0.001;
 
-A = rand(rows, n_space) * rand(n_space, n_space);
-
-permute_inds = reshape(repmat(1:n_space, cluster_size, 1), 1, n_space * cluster_size );
-A = A(:, permute_inds);
+A = gen_depmultivar_data(dim_data, dim_space, cluster_size, n_space, m, v);
+A = normalize(A);
 
 corruption = 0;
 
 N = randn(size(A)) * corruption;
 
-% weights = randn(1, 100);
-% A = A * diag(weights);
-
 X = A + N;
 
 X = normalize(X);
 
-% Z = ssc_noisefree(X);
 Z = ssc_relaxed(X, 0.01);
-% Z = ssc_relaxed_lin(X, 0.01);
-% Z = ssc_relaxed_lin_ext(X, 0.01);
-% Z = ssc_relaxed_lin_acc(X, 0.2);
-% Z = ssc_exact_fro(X, 0.9);
-
-figure, imagesc(Z)
 
 clusters = ncutW(abs(Z) + abs(Z'), n_space);
 

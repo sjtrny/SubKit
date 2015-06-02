@@ -1,4 +1,12 @@
 function [ Z ] = ssc_noisefree( X )
+%% Solves the following
+%
+% min || Z ||_1
+%   s.t. X = XZ
+%
+% Created by Stephen Tierney
+% stierney@csu.edu.au
+%
 
 sample_corr = X' * X;
 

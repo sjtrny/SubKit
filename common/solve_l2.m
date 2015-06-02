@@ -1,10 +1,11 @@
 function [ x ] = solve_l2( w, lambda )
-%MYSOLVE_L2 Summary of this function goes here
-%   Detailed explanation goes here
-
-% min lambda \lambda |x|_2 + 1/2 * |x-w|_2^2
-
-% x = w ./ (2*lambda + 1);
+%% Solves the following
+%
+%   arg min_{x} || x - b ||_2^2 + lambda/2 || x ||_2^2
+%
+% Created by Stephen Tierney
+% stierney@csu.edu.au
+%
 
 x = w ./ (lambda + 1);
 

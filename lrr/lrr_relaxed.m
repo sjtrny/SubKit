@@ -1,4 +1,13 @@
 function [ Z ] = lrr_relaxed( X, lambda )
+%% Solves the following
+%
+% min || X - XZ ||_F^2 + lambda || Z ||_*
+%
+% via ADM
+%
+% Created by Stephen Tierney
+% stierney@csu.edu.au
+%
 
 max_iterations = 200;
 
@@ -16,6 +25,9 @@ tol_1 = 1*10^-2;
 tol_2 = 1*10^-4;
 
 for k = 1 : max_iterations
+    
+    Z_prev = Z;
+    J_prev = J;
     
     % Solve for J
     

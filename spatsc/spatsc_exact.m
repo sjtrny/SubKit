@@ -1,4 +1,12 @@
 function [ Z ] = spatsc_exact( X, lambda_1, lambda_2, diagconstraint )
+%% Solves the followingr
+%
+% min || E ||_F^2 + lambda_1 || Z ||_1 + lambda_2 || Z R ||_1
+%   s.t. X = XZ + E
+%
+% Created by Stephen Tierney
+% stierney@csu.edu.au
+%
 
 if (~exist('diagconstraint','var'))
     diagconstraint = 0;

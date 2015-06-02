@@ -3,14 +3,15 @@ addpath(paths);
 
 rng(1);
 
-rows = 100;
+dim_data = 100;
+dim_space = 4;
 n_space = 5;
 cluster_size = 20;
+m = 0.1;
+v = 0.001;
 
-A = rand(rows, n_space) * rand(n_space, n_space);
-
-permute_inds = reshape(repmat(1:n_space, cluster_size, 1), 1, n_space * cluster_size );
-A = A(:, permute_inds);
+A = gen_depmultivar_data(dim_data, dim_space, cluster_size, n_space, m, v);
+A = normalize(A);
 
 corruption = 0;
 
@@ -20,13 +21,7 @@ X = A + N;
 
 X = normalize(X);
 
-% Z = lrr_noiseless(X, n_space);
-% Z = lrr_relaxed(X, 0.01);
-% Z = lrr_relaxed_lin(X, 0.01);
-% Z = lrr_relaxed_lin_ext(X, 0.01);
-% Z = lrr_relaxed_lin_acc(X, 0.1);
-Z = lrr_exact_fro(X, 0.1);
-% Z = r_lrr_fro(X, 100, n_space);
+Z = lrr_relaxed(X, 0.01);
 
 imagesc(Z);
 
@@ -34,6 +29,6 @@ clusters = ncutW(abs(Z) + abs(Z'), n_space);
 
 final_clusters = condense_clusters(clusters, 1);
 
-imagesc(final_clusters);
+figure, imagesc(final_clusters);
 
 rmpath(paths);
