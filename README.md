@@ -13,6 +13,7 @@ Subkit currently implements the following algorithms:
 Spatial Penalised Variants:
 - [Spatial Subspace Clustering] [5]
 - [Ordered Subspace Clustering][3]
+- [Low Rank Sequential Subspace Clustering][10]
 
 Multi-task and Collaborative Variants:
 - [Multi-task Low-rank Affinity Pursuit for Image Segmenation][8]
@@ -47,3 +48,4 @@ The research project is supported by the Australian Research Council (ARC) throu
 [7]: http://arxiv.org/abs/1404.6736
 [8]: http://research.microsoft.com/en-us/um/people/jingdw/pubs/iccv11-segmentation.pdf
 [9]: http://www.cis.pku.edu.cn/faculty/vision/zlin/Publications/2013-ICCV-CASS.pdf
+[10]: http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=7280328
