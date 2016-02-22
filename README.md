@@ -17,6 +17,17 @@ Spatial Penalised Variants:
 Multi-task and Collaborative Variants:
 - [Multi-task Low-rank Affinity Pursuit for Image Segmenation][8]
 
+## Citing
+
+Please cite "Segmentation of Subspaces in Sequential Data" by Stephen Tierney, Yi Guo and Junbin Gao
+Please also provide a direct link to this webpage somewhere in your paper (https://github.com/sjtrny/SubKit)
+
+    @article{tierney2015segmentation,
+    title={Segmentation of Subspaces in Sequential Data},
+    author={Tierney, Stephen and Guo, Yi and Gao, Junbin},
+    journal={arXiv preprint arXiv:1504.04090},
+    year={2015}
+    }
 
 ## Acknowledgement
 
