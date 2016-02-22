@@ -19,8 +19,9 @@ Multi-task and Collaborative Variants:
 
 ## Citing
 
-Please cite "Segmentation of Subspaces in Sequential Data" by Stephen Tierney, Yi Guo and Junbin Gao
-Please also provide a direct link to this webpage somewhere in your paper (https://github.com/sjtrny/SubKit)
+Cite "Segmentation of Subspaces in Sequential Data" by Stephen Tierney, Yi Guo and Junbin Gao
+
+Please lso provide a direct link to this webpage somewhere in your paper (https://github.com/sjtrny/SubKit)
 
     @article{tierney2015segmentation,
     title={Segmentation of Subspaces in Sequential Data},
